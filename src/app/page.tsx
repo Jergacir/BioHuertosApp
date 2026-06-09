@@ -1,65 +1,465 @@
-import Image from "next/image";
+const nearbyFarms = [
+  {
+    name: "Biohuerto La Esperanza",
+    distance: "1.2 km",
+    image:
+      "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    name: "Rancho Verde",
+    distance: "3.3 km",
+    image:
+      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    name: "Suelo Fértil",
+    distance: "4.6 km",
+    image:
+      "https://images.unsplash.com/photo-1492496913980-501348b61469?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    name: "Huerto Urbano Central",
+    distance: "6.2 km",
+    image:
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80",
+  },
+];
+
+const freshHarvests = [
+  {
+    name: "Tomate Cherry",
+    farm: "La Esperanza · 1.1 kg",
+    price: "S/. 4.50",
+    image:
+      "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=900&q=80",
+    tone: "bg-rose-50 text-rose-700",
+    quantity: 1,
+  },
+  {
+    name: "Lechuga Hidropónica",
+    farm: "Rancho Verde · 1 pz",
+    price: "S/. 2.50",
+    image:
+      "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4b9?auto=format&fit=crop&w=900&q=80",
+    tone: "bg-emerald-50 text-emerald-700",
+    quantity: null,
+  },
+  {
+    name: "Zanahoria Arcoíris",
+    farm: "Suelo Fértil · 1 kg",
+    price: "S/. 3.20",
+    image:
+      "https://images.unsplash.com/photo-1447175008436-054170c2e979?auto=format&fit=crop&w=900&q=80",
+    tone: "bg-sky-50 text-sky-700",
+    quantity: null,
+  },
+  {
+    name: "Pimientos Mixtos",
+    farm: "Huerto Urbano · 1 kg",
+    price: "S/. 6.00",
+    image:
+      "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=900&q=80",
+    tone: "bg-amber-50 text-amber-700",
+    quantity: null,
+  },
+];
+
+const categories = [
+  "Todo",
+  "Verduras",
+  "Frutas",
+  "Leguminosas",
+  "Tubérculos",
+  "Medicinales",
+];
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+      <path
+        d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm8.44 14.94-3.7-3.7"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <path
+        d="M3.5 4.5h2l1.8 9.1a2 2 0 0 0 2 1.6h7.4a2 2 0 0 0 2-1.6l1.3-6.4H7"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <circle cx="10" cy="20" r="1.2" fill="currentColor" />
+      <circle cx="17" cy="20" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <path
+        d="M12 12.5a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-6.5 8a6.5 6.5 0 0 1 13 0"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+      <path
+        d="M12 5v14M5 12h14"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function MinusIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
+      <path
+        d="M5 12h14"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}
+
+function LocationIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5">
+      <path
+        d="M12 21s6-5.4 6-11a6 6 0 1 0-12 0c0 5.6 6 11 6 11Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <circle cx="12" cy="10" r="2" fill="currentColor" />
+    </svg>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(34,197,94,0.18),_transparent_30%),linear-gradient(180deg,_#f7fbf4_0%,_#eef7ea_40%,_#ffffff_100%)] text-slate-900">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-10 pt-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-20 rounded-[1.75rem] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur xl:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-bold text-white shadow-lg shadow-emerald-600/25">
+              AG
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-5 text-slate-900">
+                AgroSystem
+              </p>
+              <p className="text-xs text-slate-500">
+                Mercado público de biohuertos
+              </p>
+            </div>
+
+            <div className="mx-2 hidden min-w-0 flex-1 items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 shadow-inner shadow-white/60 md:flex">
+              <SearchIcon />
+              <input
+                aria-label="Buscar productos frescos"
+                className="ml-2 w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                placeholder="Buscar productos frescos..."
+                type="search"
+              />
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                aria-label="Carrito"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
+                type="button"
+              >
+                <CartIcon />
+              </button>
+              <button
+                aria-label="Perfil"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
+                type="button"
+              >
+                <UserIcon />
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <section className="grid gap-5 pt-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch">
+          <div className="rounded-[2rem] border border-white/80 bg-white/88 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8 lg:p-10">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+              Mercado público
+            </div>
+            <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
+              Compra cosechas frescas directamente de biohuertos cercanos.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base lg:text-lg">
+              Descubre productores locales, compara disponibilidad en tiempo
+              real y arma tu pedido con una experiencia clara, rápida y
+              confiable.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a
+                className="inline-flex items-center justify-center rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700"
+                href="#productos"
+              >
+                Explorar mercado
+              </a>
+              <a
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
+                href="#cercanos"
+              >
+                Ver biohuertos cercanos
+              </a>
+            </div>
+
+            <dl className="mt-8 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-3xl bg-emerald-50 p-4">
+                <dt className="text-sm text-emerald-700">
+                  Productores activos
+                </dt>
+                <dd className="mt-2 text-2xl font-semibold text-slate-950">
+                  128
+                </dd>
+              </div>
+              <div className="rounded-3xl bg-sky-50 p-4">
+                <dt className="text-sm text-sky-700">Pedidos entregados</dt>
+                <dd className="mt-2 text-2xl font-semibold text-slate-950">
+                  2.4k
+                </dd>
+              </div>
+              <div className="rounded-3xl bg-amber-50 p-4">
+                <dt className="text-sm text-amber-700">Tiempo promedio</dt>
+                <dd className="mt-2 text-2xl font-semibold text-slate-950">
+                  35 min
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <aside className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "linear-gradient(180deg, rgba(10, 31, 18, 0.14), rgba(10, 31, 18, 0.58)), url(https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=80)",
+              }}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <div className="relative flex h-full min-h-[320px] flex-col justify-between p-6 text-white sm:min-h-[380px] sm:p-8">
+              <div className="flex items-start justify-between gap-4">
+                <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] backdrop-blur">
+                  Producto destacado
+                </span>
+                <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+                  Nuevo hoy
+                </span>
+              </div>
+
+              <div className="max-w-sm">
+                <h2 className="text-2xl font-semibold leading-tight sm:text-3xl">
+                  Biohuertos con entrega fresca en menos de una hora.
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-white/90 sm:text-base">
+                  Publica tu cosecha, gestiona inventario y activa la compra
+                  pública con una interfaz pensada para conversión.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  ["Entrega", "08:00 - 18:00"],
+                  ["Cobertura", "Zona urbana + periferia"],
+                  ["Pago", "Transferencia / billeteras"],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-2xl border border-white/15 bg-white/12 px-4 py-3 backdrop-blur"
+                  >
+                    <p className="text-[11px] uppercase tracking-[0.16em] text-white/70">
+                      {label}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white">
+                      {value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        
+
+        <section id="cercanos" className="pb-2">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-950 sm:text-2xl">
+                Biohuertos destacados por cercanía
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Selecciona productores locales con trazabilidad simple y compra
+                directa.
+              </p>
+            </div>
+            <a
+              className="text-sm font-semibold text-emerald-700 transition hover:text-emerald-800"
+              href="#productos"
+            >
+              Ver todo →
+            </a>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {nearbyFarms.map((farm) => (
+              <article
+                key={farm.name}
+                className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white shadow-[0_16px_30px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(15,23,42,0.11)]"
+              >
+                <div
+                  className="h-36 bg-cover bg-center transition duration-500 group-hover:scale-[1.03]"
+                  style={{ backgroundImage: `url(${farm.image})` }}
+                />
+                <div className="p-4">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                    <LocationIcon />
+                    Cercanía
+                  </div>
+                  <h3 className="mt-3 text-base font-semibold text-slate-950">
+                    {farm.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">{farm.distance}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+<section className="pt-5">
+          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {categories.map((category, index) => (
+              <button
+                key={category}
+                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
+                  index === 0
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                    : "border border-slate-200 bg-slate-50 text-slate-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                }`}
+                type="button"
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </section>
+        
+        <section id="productos" className="mt-10">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-950 sm:text-2xl">
+                Cosechas frescas del día
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Productos destacados listos para venta rápida y compra al por
+                menor.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {freshHarvests.map((product) => (
+              <article
+                key={product.name}
+                className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-[0_16px_30px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(15,23,42,0.11)]"
+              >
+                <div
+                  className="relative h-36 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${product.image})` }}
+                >
+                  <span
+                    className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${product.tone}`}
+                  >
+                    Fresco
+                  </span>
+                </div>
+                <div className="p-4 pb-3">
+                  <h3 className="text-base font-semibold text-slate-950">
+                    {product.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">{product.farm}</p>
+                  <div className="mt-4 flex items-end justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                        Precio
+                      </p>
+                      <p className="text-lg font-semibold text-emerald-700">
+                        {product.price}
+                      </p>
+                    </div>
+                    {product.quantity !== null ? (
+                      <div className="flex items-center gap-3 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1.5 text-emerald-700">
+                        <button
+                          aria-label={`Disminuir ${product.name}`}
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+                          type="button"
+                        >
+                          <MinusIcon />
+                        </button>
+                        <span className="min-w-4 text-sm font-semibold leading-none text-emerald-700">
+                          {product.quantity}
+                        </span>
+                        <button
+                          aria-label={`Aumentar ${product.name}`}
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+                          type="button"
+                        >
+                          <PlusIcon />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        aria-label={`Agregar ${product.name}`}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white"
+                        type="button"
+                      >
+                        <PlusIcon />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
