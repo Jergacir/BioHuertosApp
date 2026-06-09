@@ -1,0 +1,72 @@
+bio-huertos-app/
+├── prisma/
+│   ├── migrations/          # Historial de migraciones (cuando las generes en el futuro)
+│   ├── schema.prisma        # Tu esquema definitivo sincronizado con Neon
+├── src/
+│   ├── app/                 # FRONTEND & API ROUTING (App Router)
+│   │   ├── (auth)/          # Grupo de rutas para Autenticación (Login / Registro)
+│   │   │   ├── login/page.tsx
+│   │   │   └── register/page.tsx
+│   │   ├── (dashboard)/     # Grupo de rutas protegidas para los Productores
+│   │   │   ├── layout.tsx   # Contiene el Sidebar, Navbar global y control de sesión
+│   │   │   ├── page.tsx     # Panel principal: Indicadores, alertas y resumen [cite: 36, 37]
+│   │   │   ├── biohuertos/  # Gestión del Macro-espacio (Ficha, ubicación) [cite: 14]
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [id]/page.tsx
+│   │   │   ├── parcelas/    # Gestión de Micro-espacios por Biohuerto
+│   │   │   │   └── page.tsx
+│   │   │   ├── cultivos/    # Control de ciclos productivos y siembras [cite: 15, 17]
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [id]/page.tsx # Historial, monitoreo manual e incidencias [cite: 17, 19]
+│   │   │   ├── fitosanitario/# Módulo de diagnóstico de plagas y salud vegetal [cite: 23, 24]
+│   │   │   │   └── page.tsx
+│   │   │   ├── finanzas/    # Registro de costos, ingresos y rentabilidad [cite: 33, 34]
+│   │   │   │   └── page.tsx
+│   │   │   └── alertas/     # Vista dedicada a recordatorios y tareas pendientes [cite: 22, 36]
+│   │   │       └── page.tsx
+│   │   ├── (marketplace)/   # Catálogo público para los Consumidores y visitantes
+│   │   │   ├── layout.tsx   # Header público de navegación comercial
+│   │   │   ├── page.tsx     # Galería de cosechas disponibles para la venta [cite: 30, 31]
+│   │   │   └── producto/[id]/page.tsx # Detalle del producto y contacto por WhatsApp
+│   │   ├── api/             # API Routes opcionales (si usas peticiones tradicionales de cliente)
+│   │   │   └── fitosanitario/route.ts # Ejemplo: Procesamiento de imágenes o reportes [cite: 24, 37]
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   └── layout.tsx       # Root layout (Proveedores de contexto, fuentes, etc.)
+│   │
+│   ├── components/          # COMPONENTES DE INTERFAZ REUTILIZABLES (UI)
+│   │   ├── ui/              # Componentes atómicos (Botones, Inputs, Modales, Tarjetas)
+│   │   │   ├── button.tsx
+│   │   │   ├── input.tsx
+│   │   │   └── card.tsx
+│   │   ├── dashboard/       # Elementos específicos del panel de control
+│   │   │   ├── sidebar.tsx
+│   │   │   ├── navbar.tsx
+│   │   │   └── summary-chart.tsx # Gráficos para el reporte o analíticas [cite: 35, 36]
+│   │   └── marketplace/     # Elementos de la vista comercial
+│   │       └── product-card.tsx
+│   │
+│   ├── generated/           # ARCHIVOS AUTOGENERADOS
+│   │   └── prisma/          # El Prisma Client e interfaces TypeScript que acabas de compilar
+│   │
+│   ├── actions/             # SERVER ACTIONS (Lógica de Servidor / Mutaciones de BD)
+│   │   ├── auth.ts          # Registro, login y manejo de cookies/sesión
+│   │   ├── cultivos.ts      # Crear siembra, actualizar etapa, registrar monitoreo [cite: 15, 16, 19]
+│   │   ├── finanzas.ts      # Agregar egresos (insumos, agua) o ingresos (ventas) [cite: 33]
+│   │   ├── fitosanitario.ts # Guardar diagnósticos e integrar recomendaciones [cite: 24, 26]
+│   │   └── marketplace.ts   # Publicar cosecha y alternar estado activo/inactivo [cite: 30]
+│   │
+│   ├── lib/                 # CONFIGURACIONES DE HERRAMIENTAS Y CLIENTES
+│   │   ├── db.ts            # Instancia única (Singleton) de tu Prisma Client autogenerado
+│   │   ├── cloudinary.ts    # Configuración del SDK para la subida de fotos (perfiles, parcelas, plagas)
+│   │   └── utils.ts         # Funciones auxiliares comunes (formateadores de fecha, dinero, etc.)
+│   │
+│   ├── types/               # TIPADOS GLOBALES PERSONALIZADOS (Adicionales a Prisma)
+│   │   └── index.ts
+│   └── middleware.ts        # Protección de rutas (redirigir al login si no hay sesión activa)
+│
+├── .env                     # Variables de entorno locales (DATABASE_URL, CLOUDINARY_URL)
+├── prisma.config.ts         # Tu archivo de configuración global de Prisma 7
+├── next.config.js           # Configuración de Next.js (permitir dominios de imágenes de Cloudinary)
+├── package.json
+└── tsconfig.json

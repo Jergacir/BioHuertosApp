@@ -1,6 +1,7 @@
 -- =========================================================================
 -- SCRIPT DEFINITIVO: ECOSISTEMA DIGITAL PARA BIOHUERTOS (USAT 2026)
 -- MOTOR: PostgreSQL (Neon) con PostGIS + Soporte Cloudinary
+-- ARQUITECTURA: Escalable (Biohuerto -> Parcela -> Cultivo)
 -- =========================================================================
 
 -- =========================================================================
@@ -33,7 +34,7 @@ CREATE TABLE usuario (
 );
 
 -- =========================================================================
--- 2. MÓDULO DE BIOHUERTOS (Con Área y Soporte Cloudinary - Punto 1 del PMV)
+-- 2. MÓDULO DE BIOHUERTOS (El Macro-espacio)
 -- =========================================================================
 CREATE TABLE biohuerto (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -42,11 +43,25 @@ CREATE TABLE biohuerto (
     descripcion TEXT,
     direccion_texto TEXT NOT NULL, -- Ej: 'Av. Pimentel 123, Chiclayo'
     ubicacion_geo GEOMETRY(Point, 4326) NOT NULL, -- Coordenadas GPS (Lat, Long) para PostGIS
-    area_metros_cuadrados NUMERIC(8,2) DEFAULT 0.00 NOT NULL, -- Exigido en bases
+    area_metros_cuadrados NUMERIC(8,2) DEFAULT 0.00 NOT NULL, -- Área total de la propiedad
     foto_portada_url TEXT, -- URL segura de Cloudinary para las tarjetas estilo Gromuse
     fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_biohuerto_dueno FOREIGN KEY (dueno_id) REFERENCES usuario(id) ON DELETE CASCADE
+);
+
+-- =========================================================================
+-- 2.1. MÓDULO DE PARCELAS (El Micro-espacio físico - Nivel Pro)
+-- =========================================================================
+CREATE TABLE parcela (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    biohuerto_id UUID NOT NULL,
+    nombre_identificador VARCHAR(100) NOT NULL, -- Ej: 'Invernadero 1', 'Patio Trasero'
+    area_metros_cuadrados NUMERIC(8,2) NOT NULL, -- Cuánto mide este sector específico
+    tipo_suelo VARCHAR(50), -- Ej: 'Tierra directa', 'Maceta', 'Hidroponía'
+    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_parcela_biohuerto FOREIGN KEY (biohuerto_id) REFERENCES biohuerto(id) ON DELETE CASCADE
 );
 
 -- =========================================================================
@@ -73,27 +88,26 @@ CREATE TABLE catalogo_planta_usuario (
     
     fecha_agregado TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_usuario_catalogo KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuario_catalogo FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
     CONSTRAINT fk_planta_maestra FOREIGN KEY (planta_maestra_id) REFERENCES catalogo_planta_maestro(id) ON DELETE SET NULL,
     CONSTRAINT chk_planta_definica CHECK (planta_maestra_id IS NOT NULL OR nombre_personalizado IS NOT NULL)
 );
 
 -- =========================================================================
--- 4. MÓDULO DE GESTIÓN DE CULTIVOS Y MONITOREO (Corregido - Puntos 3 y 4 del PMV)
+-- 4. MÓDULO DE GESTIÓN DE CULTIVOS Y MONITOREO
 -- =========================================================================
 CREATE TABLE cultivo (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    biohuerto_id UUID NOT NULL,
-    planta_usuario_id UUID NOT NULL, -- Apunta al catálogo personalizado del productor
+    parcela_id UUID NOT NULL, -- Apunta a la parcela específica, no al biohuerto general
+    planta_usuario_id UUID NOT NULL, 
     fecha_siembra DATE NOT NULL,
     etapa_actual VARCHAR(50) NOT NULL DEFAULT 'Siembra', -- 'Siembra', 'Crecimiento', 'Cosecha', 'Finalizado'
-    identificador_parcela VARCHAR(100) NOT NULL, -- 'Cama #1', 'Macetero A'
     cantidad_sembrada VARCHAR(100) NOT NULL,    -- Ej: '50 plántulas', '3 m2'
     metodo_siembra VARCHAR(50) DEFAULT 'Al voleo', -- Valor Agregado agroecológico
     fecha_estimada_cosecha DATE,
     fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT fk_cultivo_biohuerto FOREIGN KEY (biohuerto_id) REFERENCES biohuerto(id) ON DELETE CASCADE,
+    CONSTRAINT fk_cultivo_parcela FOREIGN KEY (parcela_id) REFERENCES parcela(id) ON DELETE CASCADE,
     CONSTRAINT fk_cultivo_planta FOREIGN KEY (planta_usuario_id) REFERENCES catalogo_planta_usuario(id)
 );
 
@@ -104,7 +118,7 @@ CREATE TABLE monitoreo_cultivo (
     humedad_suelo NUMERIC(5,2), -- Porcentaje %
     temperatura_ambiente NUMERIC(5,2), -- Grados °C
     luminosidad_porcentaje NUMERIC(5,2), -- Numérico para precisión/sensores futuros
-    incidencias_relevantes TEXT, -- Novedades/problemas exigidos en el Punto 3 de las Bases
+    incidencias_relevantes TEXT, 
     observaciones TEXT,
     
     CONSTRAINT fk_monitoreo_cultivo FOREIGN KEY (cultivo_id) REFERENCES cultivo(id) ON DELETE CASCADE
@@ -112,12 +126,12 @@ CREATE TABLE monitoreo_cultivo (
 
 CREATE TABLE alerta_recordatorio (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    biohuerto_id UUID NOT NULL, -- Permite recordatorios generales del huerto (Punto 4 del PMV)
-    cultivo_id UUID,       -- Opcional, por si es específica de una cama/planta
+    biohuerto_id UUID NOT NULL, -- Permite recordatorios generales de toda la propiedad
+    cultivo_id UUID,       -- Opcional, por si es específica de un cultivo en una parcela
     tipo_alerta VARCHAR(50) NOT NULL DEFAULT 'Riego', -- 'Riego', 'Fertilización', 'Prevención', 'Cosecha', 'Rotación'
-    titulo VARCHAR(100) NOT NULL, -- Para el Bento Grid de la UI
+    titulo VARCHAR(100) NOT NULL, 
     descripcion TEXT,
-    prioridad VARCHAR(20) NOT NULL DEFAULT 'MEDIA', -- 'ALTA', 'MEDIA', 'BAJA' para ordenar en el Dashboard
+    prioridad VARCHAR(20) NOT NULL DEFAULT 'MEDIA', -- 'ALTA', 'MEDIA', 'BAJA'
     fecha_programada TIMESTAMP WITH TIME ZONE NOT NULL,
     completada BOOLEAN NOT NULL DEFAULT FALSE,
     fecha_completada TIMESTAMP WITH TIME ZONE,
@@ -134,7 +148,7 @@ CREATE TABLE diagnostico_plaga (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cultivo_id UUID NOT NULL,
     fecha_analisis TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    imagen_url TEXT NOT NULL, -- URL de Cloudinary de la foto de la hoja enferma
+    imagen_url TEXT NOT NULL, 
     resultado_diagnostico VARCHAR(150) NOT NULL, -- Ej: 'Tizón Tardío detectado'
     nivel_confianza NUMERIC(5,2) NOT NULL,       -- Ej: 94.50%
     tratamiento_sugerido TEXT NOT NULL,
@@ -143,12 +157,12 @@ CREATE TABLE diagnostico_plaga (
 );
 
 -- =========================================================================
--- 6. MÓDULO DE FINANZAS (COSTOS E INGRESOS - Módulo Económico)
+-- 6. MÓDULO DE FINANZAS (COSTOS E INGRESOS)
 -- =========================================================================
 CREATE TABLE registro_financiero (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     biohuerto_id UUID NOT NULL,
-    cultivo_id UUID, -- Opcional, para rastrear rentabilidad por tipo de planta
+    cultivo_id UUID, -- Opcional, para rastrear rentabilidad por cultivo específico
     tipo_transaccion VARCHAR(20) NOT NULL, -- 'EGRESO' o 'INGRESO'
     categoria VARCHAR(50) NOT NULL,        -- Ej: 'Semillas', 'Abono', 'Venta Excedente'
     monto NUMERIC(10,2) NOT NULL,          -- En Soles (S/.)
@@ -161,13 +175,13 @@ CREATE TABLE registro_financiero (
 );
 
 -- =========================================================================
--- 7. MÓDULO DE TRAZABILIDAD AGROECOLÓGICA (Sostenibilidad - Punto 8 del PMV)
+-- 7. MÓDULO DE TRAZABILIDAD AGROECOLÓGICA
 -- =========================================================================
 CREATE TABLE registro_practica_agricola (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cultivo_id UUID NOT NULL,
-    tipo_practica VARCHAR(50) NOT NULL, -- Ej: 'Aplicación de Compost', 'Riego Eficiente', 'Deshierbe'
-    es_organico BOOLEAN NOT NULL DEFAULT TRUE, -- Validador clave de sostenibilidad para el consumidor
+    tipo_practica VARCHAR(50) NOT NULL, -- Ej: 'Aplicación de Compost', 'Riego Eficiente'
+    es_organico BOOLEAN NOT NULL DEFAULT TRUE, 
     descripcion TEXT,
     fecha_aplicacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
@@ -179,13 +193,13 @@ CREATE TABLE registro_practica_agricola (
 -- =========================================================================
 CREATE TABLE publicacion_cosecha (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    cultivo_id UUID NOT NULL, -- Conexión directa para demostrar de qué cultivo viene
+    cultivo_id UUID NOT NULL, 
     titulo VARCHAR(150) NOT NULL, -- Ej: 'Tomate Cherry Premium Orgánico'
     descripcion TEXT,
     precio_por_kg NUMERIC(10,2) NOT NULL, -- En Soles (S/.)
     cantidad_disponible NUMERIC(10,2) NOT NULL, -- Ej: 12.50 kg
-    imagen_url TEXT, -- URL de Cloudinary de la cosecha real para las tarjetas de la tienda
-    activa BOOLEAN NOT NULL DEFAULT TRUE, -- Para pausar ofertas agotadas
+    imagen_url TEXT, 
+    activa BOOLEAN NOT NULL DEFAULT TRUE, 
     fecha_publicacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_publicacion_cultivo FOREIGN KEY (cultivo_id) REFERENCES cultivo(id) ON DELETE CASCADE
