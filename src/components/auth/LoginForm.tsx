@@ -95,27 +95,7 @@ export default function LoginForm() {
         {loading ? "Ingresando..." : "Entrar a mi Huerto"}
       </button>
 
-      <div className="relative py-4 text-center text-sm text-slate-400">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-slate-200" />
-        <span className="relative bg-white px-4">O continúa con</span>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
-        >
-          <span className="mr-3 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">in</span>
-          Google
-        </button>
-        <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700"
-        >
-          <span className="mr-3 inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">fi</span>
-          Huerto
-        </button>
-      </div>
+      {/* Removed social sign-in buttons (Google) per request - only classic login remains */}
     </form>
   );
 }

@@ -6,11 +6,11 @@ export default function LoginPage() {
       <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-xl overflow-hidden rounded-[36px] border border-emerald-100 bg-white/95 shadow-[0_30px_80px_rgba(14,68,38,0.12)] backdrop-blur-xl">
           <div className="bg-emerald-50 px-8 py-8 sm:px-10">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl shadow-sm shadow-emerald-200/50">
-              <span className="text-emerald-600">🌿</span>
+            <div className="mx-auto h-16 w-16">
+              <img src="/Logo_BioNed.svg" alt="BioNed" className="h-16 w-16 object-contain" />
             </div>
             <div className="mt-6 text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">AgroSystem</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">BioNed</p>
               <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900">Iniciar Sesión</h1>
               <p className="mt-2 text-sm text-slate-500">Accede a tu huerto y controla tus cultivos</p>
             </div>
