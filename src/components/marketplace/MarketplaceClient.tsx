@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { buildWhatsAppUrl, formatCurrency } from "@/lib/utils";
@@ -294,7 +295,8 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
               </div>
               <div className="flex flex-col gap-3 overflow-y-auto lg:max-h-[420px]">
                 {biohuertos.map((b) => (
-                  <article key={b.id} className="flex items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5">
+                  <Link key={b.id} href={`/biohuerto/${b.id}`}
+                    className="flex items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md">
                     <div className="h-16 w-16 shrink-0 rounded-xl bg-cover bg-center bg-emerald-100"
                       style={{ backgroundImage: b.fotoPortadaUrl ? `url(${b.fotoPortadaUrl})` : undefined }} />
                     <div className="min-w-0 flex-1">
@@ -302,15 +304,19 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
                       <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
                         <LocationIcon />{b.direccionTexto}
                       </p>
+                      <span className="mt-1.5 inline-block text-xs font-semibold text-emerald-700">
+                        Ver cosechas →
+                      </span>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {biohuertos.map((b) => (
-                <article key={b.id} className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white shadow-[0_16px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-1">
+                <Link key={b.id} href={`/biohuerto/${b.id}`}
+                  className="group overflow-hidden rounded-[1.7rem] border border-slate-200 bg-white shadow-[0_16px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_22px_45px_rgba(15,23,42,0.11)]">
                   <div className="h-36 overflow-hidden bg-cover bg-center bg-emerald-100 transition duration-500 group-hover:scale-[1.03]"
                     style={{ backgroundImage: b.fotoPortadaUrl ? `url(${b.fotoPortadaUrl})` : undefined }} />
                   <div className="p-4">
@@ -319,8 +325,9 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
                     </div>
                     <h3 className="mt-3 text-base font-semibold text-slate-950">{b.nombreHuerto}</h3>
                     <p className="mt-1 text-sm text-slate-500">{b.direccionTexto}</p>
+                    <p className="mt-2 text-xs font-semibold text-emerald-700">Ver cosechas →</p>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           )}

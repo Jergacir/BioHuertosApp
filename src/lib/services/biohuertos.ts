@@ -25,12 +25,55 @@ export async function listarTodosBiohuertos() {
   });
 }
 
-export async function obtenerBiohuertoPorId(id: string) {
+export async function obtenerPerfilBiohuerto(id: string) {
   return db.biohuerto.findUnique({
     where: { id },
-    include: {
-      parcelas: { include: { cultivos: true } },
-      alertas: { where: { completada: false }, orderBy: { fechaProgramada: "asc" } },
+    select: {
+      id: true,
+      nombreHuerto: true,
+      descripcion: true,
+      direccionTexto: true,
+      fotoPortadaUrl: true,
+      areaMetrosCuadrados: true,
+      fechaCreacion: true,
+      dueno: {
+        select: {
+          nombreCompleto: true,
+          telefono: true,
+          fotoPerfilUrl: true,
+        },
+      },
+      parcelas: {
+        select: {
+          _count: { select: { cultivos: true } },
+          cultivos: {
+            select: {
+              publicaciones: {
+                where: { activa: true },
+                select: {
+                  id: true,
+                  titulo: true,
+                  descripcion: true,
+                  precioPorKg: true,
+                  cantidadDisponible: true,
+                  imagenUrl: true,
+                  cultivo: {
+                    select: {
+                      etapaActual: true,
+                      plantaUsuario: {
+                        select: {
+                          nombrePersonalizado: true,
+                          plantaMaestra: { select: { nombreComun: true } },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 }

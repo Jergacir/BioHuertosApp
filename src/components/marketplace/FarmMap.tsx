@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface FarmPin {
   name: string;
@@ -15,22 +15,22 @@ interface FarmMapProps {
   className?: string;
 }
 
+// Chiclayo como fallback si el usuario deniega la geolocalización
+const DEFAULT_CENTER: [number, number] = [-6.7714, -79.8409];
+const DEFAULT_ZOOM = 13;
+
 export default function FarmMap({ farms, className = "" }: FarmMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
+  const [geoStatus, setGeoStatus] = useState<"pending" | "granted" | "denied">("pending");
 
   useEffect(() => {
     if (!mapRef.current) return;
-
-    // Guard against double-mount in React 18 StrictMode:
-    // Leaflet stamps the container div with _leaflet_id once initialized.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((mapRef.current as any)._leaflet_id) return;
 
-    // Dynamic import to avoid SSR issues
     import("leaflet").then((L) => {
-      // Guard again inside the async callback (race condition safety)
       if (!mapRef.current) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((mapRef.current as any)._leaflet_id) return;
@@ -39,18 +39,15 @@ export default function FarmMap({ farms, className = "" }: FarmMapProps) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconRetinaUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      // Centre on Lima, Perú by default
+      // Inicializa el mapa centrado en Chiclayo mientras esperamos la ubicación
       const map = L.map(mapRef.current!, {
-        center: [-12.0464, -77.0428],
-        zoom: 12,
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
         zoomControl: true,
         scrollWheelZoom: false,
       });
@@ -58,12 +55,11 @@ export default function FarmMap({ farms, className = "" }: FarmMapProps) {
       mapInstanceRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         maxZoom: 19,
       }).addTo(map);
 
-      // Custom green icon
+      // ── Ícono de biohuertos ──────────────────────────────────────────────
       const greenIcon = L.divIcon({
         className: "",
         html: `<div style="
@@ -79,17 +75,13 @@ export default function FarmMap({ farms, className = "" }: FarmMapProps) {
       });
 
       farms.forEach((farm) => {
-        const popup = L.popup({
-          className: "bioned-popup",
-          maxWidth: 220,
-          minWidth: 180,
-        }).setContent(`
+        const popup = L.popup({ maxWidth: 220, minWidth: 180 }).setContent(`
           <div style="font-family:system-ui,sans-serif;overflow:hidden;border-radius:12px;">
             <img src="${farm.image}" alt="${farm.name}"
               style="width:100%;height:90px;object-fit:cover;border-radius:8px 8px 0 0;margin:0;display:block;" />
             <div style="padding:10px 12px 12px;">
               <p style="margin:0;font-weight:700;font-size:13px;color:#0f172a;">${farm.name}</p>
-              <p style="margin:4px 0 0;font-size:12px;color:#16a34a;">📍 ${farm.distance} de ti</p>
+              <p style="margin:4px 0 0;font-size:12px;color:#16a34a;">📍 ${farm.distance}</p>
               <a href="#productos"
                 style="display:inline-block;margin-top:8px;padding:5px 14px;background:#16a34a;
                 color:#fff;border-radius:99px;font-size:11px;font-weight:600;text-decoration:none;">
@@ -98,13 +90,10 @@ export default function FarmMap({ farms, className = "" }: FarmMapProps) {
             </div>
           </div>
         `);
-
-        L.marker([farm.lat, farm.lng], { icon: greenIcon })
-          .addTo(map)
-          .bindPopup(popup);
+        L.marker([farm.lat, farm.lng], { icon: greenIcon }).addTo(map).bindPopup(popup);
       });
 
-      // User location pin
+      // ── Ícono del usuario ────────────────────────────────────────────────
       const userIcon = L.divIcon({
         className: "",
         html: `<div style="
@@ -116,9 +105,54 @@ export default function FarmMap({ farms, className = "" }: FarmMapProps) {
         iconAnchor: [8, 8],
       });
 
-      L.marker([-12.0464, -77.0428], { icon: userIcon })
-        .addTo(map)
-        .bindTooltip("Tu ubicación", { permanent: false, direction: "top" });
+      // ── Geolocalización real del navegador ───────────────────────────────
+      if (!navigator.geolocation) {
+        // El navegador no soporta geolocalización — quedamos en Chiclayo
+        setGeoStatus("denied");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          setGeoStatus("granted");
+
+          // Centra el mapa en la ubicación real
+          map.setView([latitude, longitude], DEFAULT_ZOOM);
+
+          // Agrega el pin del usuario
+          const userMarker = L.marker([latitude, longitude], { icon: userIcon })
+            .addTo(map)
+            .bindTooltip("Tu ubicación", { permanent: false, direction: "top" });
+
+          // Círculo de precisión
+          L.circle([latitude, longitude], {
+            radius: accuracy,
+            color: "#3b82f6",
+            fillColor: "#3b82f6",
+            fillOpacity: 0.08,
+            weight: 1,
+          }).addTo(map);
+
+          userMarker.openTooltip();
+        },
+        () => {
+          // Usuario denegó o hubo error — centramos en Chiclayo y colocamos
+          // pin de referencia en el centro por defecto
+          setGeoStatus("denied");
+          L.marker(DEFAULT_CENTER, { icon: userIcon })
+            .addTo(map)
+            .bindTooltip("Chiclayo (ubicación por defecto)", {
+              permanent: false,
+              direction: "top",
+            });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 60_000,
+        }
+      );
     });
 
     return () => {
@@ -127,24 +161,30 @@ export default function FarmMap({ farms, className = "" }: FarmMapProps) {
         mapInstanceRef.current = null;
       }
     };
-  // farms is stable static data; no need to re-run on reference change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <>
-      {/* Leaflet CSS loaded via link tag */}
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         crossOrigin=""
       />
-      <div
-        ref={mapRef}
-        className={`relative z-0 h-full w-full rounded-[1.7rem] ${className}`}
-        aria-label="Mapa de biohuertos cercanos"
-        role="img"
-      />
+      <div className={`relative ${className}`}>
+        <div
+          ref={mapRef}
+          className="h-full w-full rounded-[1.7rem]"
+          aria-label="Mapa de biohuertos cercanos"
+          role="img"
+        />
+        {/* Banner cuando el permiso fue denegado */}
+        {geoStatus === "denied" && (
+          <div className="absolute bottom-3 left-1/2 z-[1000] -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700 shadow-sm">
+            📍 Ubicación no disponible — mostrando Chiclayo
+          </div>
+        )}
+      </div>
     </>
   );
 }
