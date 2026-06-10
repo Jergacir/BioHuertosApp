@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AgroSystem | Mercado Público",
+  title: "BioNed | Mercado Público de Biohuertos",
   description:
-    "Interfaz inicial del mercado público de biohuertos para AgroSmart Pro Dashboard.",
+    "Compra cosechas frescas directamente de biohuertos urbanos cercanos a ti.",
 };
 
 export default function RootLayout({

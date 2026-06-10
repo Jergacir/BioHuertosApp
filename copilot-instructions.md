@@ -1,4 +1,4 @@
-# Contexto del Proyecto: AgroSystem 🌿
+# Contexto del Proyecto: BioNed 🌿
 Actúa como un Ingeniero de Software Full-Stack experto en Next.js, Tailwind CSS y Prisma ORM. Me estás ayudando a desarrollar un MVP para una Hackathon enfocado en la gestión de biohuertos urbanos y un marketplace de contacto directo local.
 
 ## 🚀 Arquitectura y Stack Tecnológico
