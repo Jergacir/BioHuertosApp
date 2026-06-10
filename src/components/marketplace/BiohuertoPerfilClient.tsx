@@ -99,7 +99,7 @@ export default function BiohuertoPerfilClient({ perfil }: Props) {
     <div className="min-h-screen bg-[linear-gradient(180deg,#f7fbf4_0%,#ffffff_100%)] text-slate-900">
 
       {/* ── Hero con portada ── */}
-      <div className="relative h-64 w-full sm:h-80 lg:h-96">
+      <div className="relative h-56 w-full overflow-hidden sm:h-72 lg:h-80">
         {perfil.fotoPortadaUrl ? (
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -144,7 +144,7 @@ export default function BiohuertoPerfilClient({ perfil }: Props) {
       <div className="mx-auto max-w-5xl px-4 pb-16 sm:px-6 lg:px-8">
 
         {/* ── Card de productor + stats ── */}
-        <div className="-mt-8 mb-8 grid gap-4 sm:grid-cols-[1fr_auto]">
+        <div className="mt-6 mb-8 grid gap-4 sm:grid-cols-[1fr_auto]">
 
           {/* Productor */}
           <div className="flex items-center gap-4 rounded-[1.5rem] border border-white/80 bg-white p-5 shadow-[0_16px_40px_rgba(15,23,42,0.1)]">

@@ -165,7 +165,7 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pb-12 pt-4 sm:px-6 lg:px-8">
 
         {/* ── Header ── */}
-        <header className="sticky top-0 z-20 rounded-[1.75rem] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur xl:px-6">
+        <header className="sticky top-0 z-9999 rounded-[1.75rem] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur xl:px-6">
           <div className="flex items-center gap-3">
             {/* <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-bold text-white shadow-lg shadow-emerald-600/25">
               🌿
