@@ -3,14 +3,37 @@ import { db } from "@/lib/db";
 export async function listarCosechasActivas() {
   return db.publicacionCosecha.findMany({
     where: { activa: true },
-    include: {
+    select: {
+      id: true,
+      titulo: true,
+      descripcion: true,
+      precioPorKg: true,
+      cantidadDisponible: true,
+      imagenUrl: true,
+      activa: true,
+      fechaPublicacion: true,
       cultivo: {
-        include: {
-          plantaUsuario: { include: { plantaMaestra: true } },
+        select: {
+          id: true,
+          etapaActual: true,
+          plantaUsuario: {
+            select: {
+              nombrePersonalizado: true,
+              plantaMaestra: {
+                select: { nombreComun: true, iconoUrl: true },
+              },
+            },
+          },
           parcela: {
-            include: {
+            select: {
+              nombreIdentificador: true,
               biohuerto: {
-                include: { dueno: { select: { telefono: true } } },
+                select: {
+                  nombreHuerto: true,
+                  direccionTexto: true,
+                  fotoPortadaUrl: true,
+                  dueno: { select: { telefono: true } },
+                },
               },
             },
           },

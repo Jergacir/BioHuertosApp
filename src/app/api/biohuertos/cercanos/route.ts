@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listarBiohuertoCercanos } from "@/lib/services/biohuertos";
-
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const lat = parseFloat(searchParams.get("lat") ?? "");

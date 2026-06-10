@@ -20,7 +20,6 @@ export function formatDate(date: Date | string): string {
 
 /**
  * Formatea una distancia en metros o kilómetros
- * Ej: formatDistance(800) → "800 m"  /  formatDistance(1500) → "1.5 km"
  */
 export function formatDistance(meters: number): string {
   if (meters < 1000) return `${meters} m`;
@@ -40,4 +39,13 @@ export function buildWhatsAppUrl(phone: string, message: string): string {
  */
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+/**
+ * Serializa cualquier objeto de Prisma a un plain object JSON-safe.
+ * Convierte Decimal → number, Date → string, elimina clases no serializables.
+ * Úsalo en Server Components antes de pasar datos a Client Components.
+ */
+export function serialize<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data)) as T;
 }

@@ -1,10 +1,26 @@
 import { db } from "@/lib/db";
-import type { BiohuertoCercano } from "@/types";
+import type { BiohuertoPrevioDTO } from "@/types";
 
 export async function listarBiohuertosDeUsuario(duenoId: string) {
   return db.biohuerto.findMany({
     where: { duenoId },
     include: { parcelas: { include: { cultivos: true } } },
+    orderBy: { fechaCreacion: "desc" },
+  });
+}
+
+export async function listarTodosBiohuertos() {
+  return db.biohuerto.findMany({
+    select: {
+      id: true,
+      nombreHuerto: true,
+      descripcion: true,
+      direccionTexto: true,
+      fotoPortadaUrl: true,
+      areaMetrosCuadrados: true,
+      dueno: { select: { nombreCompleto: true, telefono: true } },
+      parcelas: { select: { _count: true } },
+    },
     orderBy: { fechaCreacion: "desc" },
   });
 }
@@ -49,12 +65,21 @@ export async function crearBiohuerto(data: {
   `;
 }
 
+// Resultado de la query PostGIS — columnas en snake_case como las devuelve pg
+export interface BiohuertoCercanoRaw {
+  id: string;
+  nombre_huerto: string;
+  direccion_texto: string;
+  foto_portada_url: string | null;
+  distancia_km: number;
+}
+
 export async function listarBiohuertoCercanos(
   lat: number,
   lng: number,
   radioKm: number = 20
-): Promise<BiohuertoCercano[]> {
-  return db.$queryRaw<BiohuertoCercano[]>`
+): Promise<BiohuertoCercanoRaw[]> {
+  return db.$queryRaw<BiohuertoCercanoRaw[]>`
     SELECT
       b.id,
       b.nombre_huerto,

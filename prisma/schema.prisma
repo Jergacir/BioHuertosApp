@@ -1,72 +1,53 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
   previewFeatures = ["postgresqlExtensions"]
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
-  extensions = [uuid_ossp(map: "uuid-ossp"), postgis]
+  provider   = "postgresql"
+  extensions = [postgis, uuid_ossp(map: "uuid-ossp")]
 }
 
-// =========================================================================
-// CONFIGURACIÓN DE CONEXIÓN Y EXTENSIONES (Mapeado con Neon + PostGIS)
-// =========================================================================
-
-// =========================================================================
-// 1. MÓDULO DE USUARIOS Y ROLES
-// =========================================================================
-
 model Rol {
-  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre         String    @unique @db.VarChar(50)
-  descripcion    String?   @db.Text
-  fechaCreacion  DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz
-  usuarios       Usuario[]
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre        String    @unique @db.VarChar(50)
+  descripcion   String?
+  fechaCreacion DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
+  usuarios      Usuario[]
 
   @@map("rol")
 }
 
 model Usuario {
-  id              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  rolId           String                    @map("rol_id") @db.Uuid
-  nombreCompleto  String                    @map("nombre_completo") @db.VarChar(150)
-  email           String                    @unique @db.VarChar(150)
-  telefono        String?                   @db.VarChar(20)
-  passwordHash    String                    @map("password_hash") @db.Text
-  fotoPerfilUrl   String?                   @map("foto_perfil_url") @db.Text
-  fechaRegistro   DateTime                  @default(now()) @map("fecha_registro") @db.Timestamptz
-  
-  rol             Rol                       @relation(fields: [rolId], references: [id])
-  biohuertos      Biohuerto[]
-  plantasUsuario  CatalogoPlantaUsuario[]
+  id             String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rolId          String                  @map("rol_id") @db.Uuid
+  nombreCompleto String                  @map("nombre_completo") @db.VarChar(150)
+  email          String                  @unique @db.VarChar(150)
+  telefono       String?                 @db.VarChar(20)
+  passwordHash   String                  @map("password_hash")
+  fotoPerfilUrl  String?                 @map("foto_perfil_url")
+  fechaRegistro  DateTime                @default(now()) @map("fecha_registro") @db.Timestamptz(6)
+  biohuertos     Biohuerto[]
+  plantasUsuario CatalogoPlantaUsuario[]
+  rol            Rol                     @relation(fields: [rolId], references: [id])
 
   @@map("usuario")
 }
 
-// =========================================================================
-// 2. MÓDULO DE BIOHUERTOS Y PARCELAS (Jerarquía Macro -> Micro)
-// =========================================================================
-
 model Biohuerto {
-  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  duenoId             String               @map("dueno_id") @db.Uuid
-  nombreHuerto        String               @map("nombre_huerto") @db.VarChar(100)
-  descripcion         String?              @db.Text
-  direccionTexto      String               @map("direccion_texto") @db.Text
-  ubicacionGeo        Unsupported("geometry(Point, 4326)") // Campo nativo de PostGIS para mapas interactivos
-  areaMetrosCuadrados Decimal              @map("area_metros_cuadrados") @db.Decimal(8, 2)
-  fotoPortadaUrl      String?              @map("foto_portada_url") @db.Text
-  fechaCreacion       DateTime             @default(now()) @map("fecha_creacion") @db.Timestamptz
-  
-  dueno               Usuario              @relation(fields: [duenoId], references: [id], onDelete: Cascade)
-  parcelas            Parcela[]
+  id                  String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  duenoId             String                  @map("dueno_id") @db.Uuid
+  nombreHuerto        String                  @map("nombre_huerto") @db.VarChar(100)
+  descripcion         String?
+  direccionTexto      String                  @map("direccion_texto")
+  ubicacionGeo        Unsupported("geometry")
+  areaMetrosCuadrados Decimal                 @map("area_metros_cuadrados") @db.Decimal(8, 2)
+  fotoPortadaUrl      String?                 @map("foto_portada_url")
+  fechaCreacion       DateTime                @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
   alertas             AlertaRecordatorio[]
+  dueno               Usuario                 @relation(fields: [duenoId], references: [id], onDelete: Cascade)
+  parcelas            Parcela[]
   finanzas            RegistroFinanciero[]
 
   @@map("biohuerto")
@@ -78,26 +59,21 @@ model Parcela {
   nombreIdentificador String    @map("nombre_identificador") @db.VarChar(100)
   areaMetrosCuadrados Decimal   @map("area_metros_cuadrados") @db.Decimal(8, 2)
   tipoSuelo           String?   @map("tipo_suelo") @db.VarChar(50)
-  fechaCreacion       DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz
-  
-  biohuerto           Biohuerto @relation(fields: [biohuertoId], references: [id], onDelete: Cascade)
+  fechaCreacion       DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
   cultivos            Cultivo[]
+  biohuerto           Biohuerto @relation(fields: [biohuertoId], references: [id], onDelete: Cascade)
 
   @@map("parcela")
 }
 
-// =========================================================================
-// 3. MÓDULO DE CATÁLOGOS Y PLANTAS
-// =========================================================================
-
 model CatalogoPlantaMaestro {
-  id                          String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombreComun                 String                  @unique @map("nombre_comun") @db.VarChar(100)
-  nombreCientifico            String?                 @map("nombre_cientifico") @db.VarChar(150)
-  familiaBotanica             String                  @map("familia_botanica") @db.VarChar(100)
-  tiempoEstimadoCosechaDias   Int                     @map("tiempo_estimado_cosecha_dias")
-  iconoUrl                    String?                 @map("icono_url") @db.Text
-  plantasUsuario              CatalogoPlantaUsuario[]
+  id                        String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombreComun               String                  @unique @map("nombre_comun") @db.VarChar(100)
+  nombreCientifico          String?                 @map("nombre_cientifico") @db.VarChar(150)
+  familiaBotanica           String                  @map("familia_botanica") @db.VarChar(100)
+  tiempoEstimadoCosechaDias Int                     @map("tiempo_estimado_cosecha_dias")
+  iconoUrl                  String?                 @map("icono_url")
+  plantasUsuario            CatalogoPlantaUsuario[]
 
   @@map("catalogo_planta_maestro")
 }
@@ -109,38 +85,32 @@ model CatalogoPlantaUsuario {
   nombrePersonalizado            String?                @map("nombre_personalizado") @db.VarChar(100)
   familiaPersonalizada           String?                @map("familia_personalizada") @db.VarChar(100)
   tiempoCosechaPersonalizadoDias Int?                   @map("tiempo_cosecha_personalizado_dias")
-  fechaAgregado                  DateTime               @default(now()) @map("fecha_agregado") @db.Timestamptz
-  
+  fechaAgregado                  DateTime               @default(now()) @map("fecha_agregado") @db.Timestamptz(6)
+  plantaMaestra                  CatalogoPlantaMaestro? @relation(fields: [plantaMaestraId], references: [id])
   usuario                        Usuario                @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  plantaMaestra                  CatalogoPlantaMaestro? @relation(fields: [plantaMaestraId], references: [id], onDelete: SetNull)
   cultivos                       Cultivo[]
 
   @@map("catalogo_planta_usuario")
 }
 
-// =========================================================================
-// 4. MÓDULO DE GESTIÓN DE CULTIVOS Y MONITOREO
-// =========================================================================
-
 model Cultivo {
-  id                    String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  parcelaId             String                    @map("parcela_id") @db.Uuid
-  plantaUsuarioId       String                    @map("planta_usuario_id") @db.Uuid
-  fechaSiembra          DateTime                  @map("fecha_siembra") @db.Date
-  etapaActual           String                    @default("Siembra") @map("etapa_actual") @db.VarChar(50)
-  cantidadSembrada      String                    @map("cantidad_sembrada") @db.VarChar(100)
-  metodoSiembra         String?                   @default("Al voleo") @map("metodo_siembra") @db.VarChar(50)
-  fechaEstimadaCosecha  DateTime?                 @map("fecha_estimada_cosecha") @db.Date
-  fechaCreacion         DateTime                  @default(now()) @map("fecha_creacion") @db.Timestamptz
-  
-  parcela               Parcela                   @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
-  plantaUsuario         CatalogoPlantaUsuario     @relation(fields: [plantaUsuarioId], references: [id])
-  monitoreos            MonitoreoCultivo[]
-  alertas               AlertaRecordatorio[]
-  diagnosticos          DiagnosticoPlaga[]
-  finanzas              RegistroFinanciero[]
-  practicasAgricolas    RegistroPracticaAgricola[]
-  publicaciones         PublicacionCosecha[]
+  id                   String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parcelaId            String                     @map("parcela_id") @db.Uuid
+  plantaUsuarioId      String                     @map("planta_usuario_id") @db.Uuid
+  fechaSiembra         DateTime                   @map("fecha_siembra") @db.Date
+  etapaActual          String                     @default("Siembra") @map("etapa_actual") @db.VarChar(50)
+  cantidadSembrada     String                     @map("cantidad_sembrada") @db.VarChar(100)
+  metodoSiembra        String?                    @default("Al voleo") @map("metodo_siembra") @db.VarChar(50)
+  fechaEstimadaCosecha DateTime?                  @map("fecha_estimada_cosecha") @db.Date
+  fechaCreacion        DateTime                   @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
+  alertas              AlertaRecordatorio[]
+  parcela              Parcela                    @relation(fields: [parcelaId], references: [id], onDelete: Cascade)
+  plantaUsuario        CatalogoPlantaUsuario      @relation(fields: [plantaUsuarioId], references: [id])
+  diagnosticos         DiagnosticoPlaga[]
+  monitoreos           MonitoreoCultivo[]
+  publicaciones        PublicacionCosecha[]
+  finanzas             RegistroFinanciero[]
+  practicasAgricolas   RegistroPracticaAgricola[]
 
   @@map("cultivo")
 }
@@ -148,13 +118,12 @@ model Cultivo {
 model MonitoreoCultivo {
   id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cultivoId             String   @map("cultivo_id") @db.Uuid
-  fechaRegistro         DateTime @default(now()) @map("fecha_registro") @db.Timestamptz
+  fechaRegistro         DateTime @default(now()) @map("fecha_registro") @db.Timestamptz(6)
   humedadSuelo          Decimal? @map("humedad_suelo") @db.Decimal(5, 2)
   temperaturaAmbiente   Decimal? @map("temperatura_ambiente") @db.Decimal(5, 2)
   luminosidadPorcentaje Decimal? @map("luminosidad_porcentaje") @db.Decimal(5, 2)
-  incidenciasRelevantes String?  @map("incidencias_relevantes") @db.Text
-  observaciones         String?  @db.Text
-  
+  incidenciasRelevantes String?  @map("incidencias_relevantes")
+  observaciones         String?
   cultivo               Cultivo  @relation(fields: [cultivoId], references: [id], onDelete: Cascade)
 
   @@map("monitoreo_cultivo")
@@ -166,90 +135,78 @@ model AlertaRecordatorio {
   cultivoId       String?   @map("cultivo_id") @db.Uuid
   tipoAlerta      String    @default("Riego") @map("tipo_alerta") @db.VarChar(50)
   titulo          String    @db.VarChar(100)
-  descripcion     String?   @db.Text
+  descripcion     String?
   prioridad       String    @default("MEDIA") @db.VarChar(20)
-  fechaProgramada DateTime  @map("fecha_programada") @db.Timestamptz
+  fechaProgramada DateTime  @map("fecha_programada") @db.Timestamptz(6)
   completada      Boolean   @default(false)
-  fechaCompletada DateTime? @map("fecha_completada") @db.Timestamptz
-  fechaCreacion   DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz
-  
+  fechaCompletada DateTime? @map("fecha_completada") @db.Timestamptz(6)
+  fechaCreacion   DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
   biohuerto       Biohuerto @relation(fields: [biohuertoId], references: [id], onDelete: Cascade)
-  cultivo         Cultivo?  @relation(fields: [cultivoId], references: [id], onDelete: SetNull)
+  cultivo         Cultivo?  @relation(fields: [cultivoId], references: [id])
 
   @@map("alerta_recordatorio")
 }
 
-// =========================================================================
-// 5. MÓDULO DE DIAGNÓSTICO FITOSANITARIO (IA / SALUD)
-// =========================================================================
-
 model DiagnosticoPlaga {
-  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  cultivoId           String   @map("cultivo_id") @db.Uuid
-  fechaAnalisis       DateTime @default(now()) @map("fecha_analisis") @db.Timestamptz
-  imagenUrl           String   @map("imagen_url") @db.Text
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cultivoId            String   @map("cultivo_id") @db.Uuid
+  fechaAnalisis        DateTime @default(now()) @map("fecha_analisis") @db.Timestamptz(6)
+  imagenUrl            String   @map("imagen_url")
   resultadoDiagnostico String   @map("resultado_diagnostico") @db.VarChar(150)
-  nivelConfianza      Decimal  @map("nivel_confianza") @db.Decimal(5, 2)
-  tratamientoSugerido String   @map("tratamiento_sugerido") @db.Text
-  
-  cultivo             Cultivo  @relation(fields: [cultivoId], references: [id], onDelete: Cascade)
+  nivelConfianza       Decimal  @map("nivel_confianza") @db.Decimal(5, 2)
+  tratamientoSugerido  String   @map("tratamiento_sugerido")
+  cultivo              Cultivo  @relation(fields: [cultivoId], references: [id], onDelete: Cascade)
 
   @@map("diagnostico_plaga")
 }
-
-// =========================================================================
-// 6. MÓDULO DE FINANZAS (COSTOS E INGRESOS)
-// =========================================================================
 
 model RegistroFinanciero {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   biohuertoId      String    @map("biohuerto_id") @db.Uuid
   cultivoId        String?   @map("cultivo_id") @db.Uuid
-  tipoTransaccion  String    @map("tipo_transaccion") @db.VarChar(20) // 'INGRESO' o 'EGRESO'
+  tipoTransaccion  String    @map("tipo_transaccion") @db.VarChar(20)
   categoria        String    @db.VarChar(50)
   monto            Decimal   @db.Decimal(10, 2)
-  descripcion      String?   @db.Text
+  descripcion      String?
   fechaTransaccion DateTime  @default(dbgenerated("CURRENT_DATE")) @map("fecha_transaccion") @db.Date
-  
   biohuerto        Biohuerto @relation(fields: [biohuertoId], references: [id], onDelete: Cascade)
-  cultivo          Cultivo?  @relation(fields: [cultivoId], references: [id], onDelete: SetNull)
+  cultivo          Cultivo?  @relation(fields: [cultivoId], references: [id])
 
   @@map("registro_financiero")
 }
-
-// =========================================================================
-// 7. MÓDULO DE TRAZABILIDAD AGROECOLÓGICA
-// =========================================================================
 
 model RegistroPracticaAgricola {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cultivoId       String   @map("cultivo_id") @db.Uuid
   tipoPractica    String   @map("tipo_practica") @db.VarChar(50)
   esOrganico      Boolean  @default(true) @map("es_organico")
-  descripcion     String?  @db.Text
-  fechaAplicacion DateTime @default(now()) @map("fecha_aplicacion") @db.Timestamptz
-  
+  descripcion     String?
+  fechaAplicacion DateTime @default(now()) @map("fecha_aplicacion") @db.Timestamptz(6)
   cultivo         Cultivo  @relation(fields: [cultivoId], references: [id], onDelete: Cascade)
 
   @@map("registro_practica_agricola")
 }
 
-// =========================================================================
-// 8. MÓDULO DE MARKETPLACE
-// =========================================================================
-
 model PublicacionCosecha {
   id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cultivoId          String   @map("cultivo_id") @db.Uuid
   titulo             String   @db.VarChar(150)
-  descripcion        String?  @db.Text
+  descripcion        String?
   precioPorKg        Decimal  @map("precio_por_kg") @db.Decimal(10, 2)
   cantidadDisponible Decimal  @map("cantidad_disponible") @db.Decimal(10, 2)
-  imagenUrl          String?  @map("imagen_url") @db.Text
+  imagenUrl          String?  @map("imagen_url")
   activa             Boolean  @default(true)
-  fechaPublicacion   DateTime @default(now()) @map("fecha_publicacion") @db.Timestamptz
-  
+  fechaPublicacion   DateTime @default(now()) @map("fecha_publicacion") @db.Timestamptz(6)
   cultivo            Cultivo  @relation(fields: [cultivoId], references: [id], onDelete: Cascade)
 
   @@map("publicacion_cosecha")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
 }
