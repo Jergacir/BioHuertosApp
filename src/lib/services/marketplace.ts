@@ -47,15 +47,50 @@ export async function listarCosechasActivas() {
 export async function obtenerCosechaPorId(id: string) {
   return db.publicacionCosecha.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      titulo: true,
+      descripcion: true,
+      precioPorKg: true,
+      cantidadDisponible: true,
+      imagenUrl: true,
+      fechaPublicacion: true,
       cultivo: {
-        include: {
-          plantaUsuario: { include: { plantaMaestra: true } },
+        select: {
+          etapaActual: true,
+          fechaSiembra: true,
+          metodoSiembra: true,
+          plantaUsuario: {
+            select: {
+              nombrePersonalizado: true,
+              plantaMaestra: {
+                select: {
+                  nombreComun: true,
+                  nombreCientifico: true,
+                  familiaBotanica: true,
+                  tiempoEstimadoCosechaDias: true,
+                  iconoUrl: true,
+                },
+              },
+            },
+          },
           parcela: {
-            include: {
+            select: {
+              nombreIdentificador: true,
+              tipoSuelo: true,
               biohuerto: {
-                include: {
-                  dueno: { select: { nombreCompleto: true, telefono: true } },
+                select: {
+                  id: true,
+                  nombreHuerto: true,
+                  direccionTexto: true,
+                  fotoPortadaUrl: true,
+                  dueno: {
+                    select: {
+                      nombreCompleto: true,
+                      telefono: true,
+                      fotoPerfilUrl: true,
+                    },
+                  },
                 },
               },
             },
