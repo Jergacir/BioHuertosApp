@@ -66,7 +66,45 @@ export interface BiohuertoPrevioDTO {
   parcelas: { _count: unknown }[];
 }
 
-// ─── Perfil público del biohuerto (página "tiendita") ─────────────────────────
+export interface CosechaDetalleDTO {
+  id: string;
+  titulo: string;
+  descripcion: string | null;
+  precioPorKg: number;
+  cantidadDisponible: number;
+  imagenUrl: string | null;
+  fechaPublicacion: string;
+  cultivo: {
+    etapaActual: string;
+    fechaSiembra: string;
+    metodoSiembra: string | null;
+    plantaUsuario: {
+      nombrePersonalizado: string | null;
+      plantaMaestra: {
+        nombreComun: string;
+        nombreCientifico: string | null;
+        familiaBotanica: string;
+        tiempoEstimadoCosechaDias: number;
+        iconoUrl: string | null;
+      } | null;
+    };
+    parcela: {
+      nombreIdentificador: string;
+      tipoSuelo: string | null;
+      biohuerto: {
+        id: string;
+        nombreHuerto: string;
+        direccionTexto: string;
+        fotoPortadaUrl: string | null;
+        dueno: {
+          nombreCompleto: string;
+          telefono: string | null;
+          fotoPerfilUrl: string | null;
+        };
+      };
+    };
+  };
+}
 
 export interface CosechaPerfilDTO {
   id: string;

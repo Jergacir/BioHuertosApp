@@ -4,6 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { buildWhatsAppUrl, formatCurrency } from "@/lib/utils";
+import { useCart } from "@/context/CartContext";
 import type { CosechaDTO, BiohuertoPrevioDTO } from "@/types";
 import type { listarTodosBiohuertos } from "@/lib/services/biohuertos";
 
@@ -126,24 +127,51 @@ function WhatsAppIcon() {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceProps) {
+  const { addItem, updateCantidad, items, totalItems } = useCart();
   const [mapView, setMapView] = useState(true);
   const [activeCategory, setActiveCategory] = useState("Todo");
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
 
-  function increment(id: string) {
-    setQuantities((q) => ({ ...q, [id]: (q[id] ?? 0) + 1 }));
+  function getQty(id: string) {
+    return items.find((i) => i.id === id)?.cantidad ?? 0;
+  }
+  function increment(cosecha: CosechaDTO) {
+    const qty = getQty(cosecha.id);
+    // Guard: cultivo should always be present on a fresh CosechaDTO,
+    // but defensively check in case of stale localStorage data.
+    const nombrePlanta =
+      cosecha.cultivo?.plantaUsuario?.plantaMaestra?.nombreComun ?? cosecha.titulo;
+    const biohuerto =
+      cosecha.cultivo?.parcela?.biohuerto?.nombreHuerto ?? "";
+    const telefono =
+      cosecha.cultivo?.parcela?.biohuerto?.dueno?.telefono ?? null;
+
+    if (qty === 0) {
+      addItem({
+        id: cosecha.id,
+        titulo: cosecha.titulo,
+        nombrePlanta,
+        biohuerto,
+        telefono,
+        precioPorKg: cosecha.precioPorKg,
+        imagenUrl: cosecha.imagenUrl,
+      });
+    } else {
+      updateCantidad(cosecha.id, qty + 1);
+    }
   }
   function decrement(id: string) {
-    setQuantities((q) => ({ ...q, [id]: Math.max(0, (q[id] ?? 0) - 1) }));
+    const qty = getQty(id);
+    updateCantidad(id, qty - 1);
   }
 
-  const cartTotal = Object.values(quantities).reduce((a, b) => a + b, 0);
+  // Cosecha destacada: la primera del listado
+  const destacada = cosechas[0] ?? null;
 
   // Filtrar cosechas por búsqueda
   const cosechasFiltradas = cosechas.filter((c) => {
-    const nombre = c.cultivo.plantaUsuario.plantaMaestra?.nombreComun ?? c.titulo;
-    return nombre.toLowerCase().includes(search.toLowerCase()) || 
+    const nombre = c.cultivo?.plantaUsuario?.plantaMaestra?.nombreComun ?? c.titulo;
+    return nombre.toLowerCase().includes(search.toLowerCase()) ||
            c.titulo.toLowerCase().includes(search.toLowerCase());
   });
 
@@ -167,9 +195,6 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
         {/* ── Header ── */}
         <header className="sticky top-0 z-9999 rounded-[1.75rem] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur xl:px-6">
           <div className="flex items-center gap-3">
-            {/* <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-bold text-white shadow-lg shadow-emerald-600/25">
-              🌿
-            </div> */}
             <img
               src="/Logo_BioNed.svg"
               alt="BioNed"
@@ -187,14 +212,15 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
               />
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <button aria-label="Carrito" className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700" type="button">
+              <Link href="/carrito" aria-label="Carrito de compras"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700">
                 <CartIcon />
-                {cartTotal > 0 && (
+                {totalItems > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-bold text-white">
-                    {cartTotal}
+                    {totalItems}
                   </span>
                 )}
-              </button>
+              </Link>
               <a href="/login" aria-label="Acceso productores" className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-200 hover:text-emerald-700">
                 <UserIcon />
               </a>
@@ -239,29 +265,70 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
           </div>
 
           <aside className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "linear-gradient(180deg,rgba(10,31,18,0.14),rgba(10,31,18,0.58)),url(https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=80)" }} />
-            <div className="relative flex h-full min-h-[320px] flex-col justify-between p-6 text-white sm:min-h-[380px] sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] backdrop-blur">Programa RSU</span>
-                <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">Hoy</span>
-              </div>
-              <div className="max-w-sm">
-                <h2 className="text-2xl font-semibold leading-tight sm:text-3xl">
-                  Biohuertos urbanos con cosechas frescas sin intermediarios.
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-white/90">
-                  Programa de Responsabilidad Social Universitaria — USAT Chiclayo. Compra directa, trazabilidad completa.
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {[["Zona", "Chiclayo y Pimentel"], ["Pago", "Transferencia / efectivo"], ["Contacto", "WhatsApp directo"]].map(([label, value]) => (
-                  <div key={label} className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-white/70">{label}</p>
-                    <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+            {destacada ? (
+              <>
+                <div className="absolute inset-0 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `linear-gradient(180deg,rgba(10,31,18,0.08),rgba(10,31,18,0.65)),url(${
+                      destacada.imagenUrl ??
+                      "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1400&q=80"
+                    })`,
+                  }}
+                />
+                <div className="relative flex h-full min-h-[320px] flex-col justify-between p-6 text-white sm:min-h-[380px] sm:p-8">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="inline-flex rounded-full border border-white/20 bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] backdrop-blur">
+                      Cosecha destacada
+                    </span>
+                    <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+                      {destacada.cultivo.etapaActual}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
+
+                  <div className="max-w-sm">
+                    <p className="text-xs font-medium uppercase tracking-widest text-white/70">
+                      {destacada.cultivo.plantaUsuario.plantaMaestra?.nombreComun ?? destacada.titulo}
+                    </p>
+                    <h2 className="mt-1 text-2xl font-bold leading-tight sm:text-3xl">
+                      {destacada.titulo}
+                    </h2>
+                    <p className="mt-2 flex items-center gap-1.5 text-sm text-white/80">
+                      📍 {destacada.cultivo.parcela.biohuerto.nombreHuerto}
+                    </p>
+                    <p className="mt-3 text-3xl font-bold">
+                      {formatCurrency(destacada.precioPorKg)}
+                      <span className="ml-1 text-sm font-normal text-white/70">/ kg</span>
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Link href={`/producto/${destacada.id}`}
+                      className="flex-1 rounded-full border border-white/30 bg-white/15 py-3 text-center text-sm font-semibold text-white backdrop-blur transition hover:bg-white/25">
+                      Ver detalle
+                    </Link>
+                    {destacada.cultivo.parcela.biohuerto.dueno.telefono && (
+                      <a href={buildWhatsAppUrl(
+                          destacada.cultivo.parcela.biohuerto.dueno.telefono,
+                          `Hola! Me interesa "${destacada.titulo}" en BioNed. ¿Está disponible?`
+                        )}
+                        target="_blank" rel="noopener noreferrer"
+                        className="flex-1 rounded-full bg-[#25D366] py-3 text-center text-sm font-semibold text-white shadow-lg transition hover:bg-[#1ebe5d]">
+                        Pedir por WhatsApp
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-700 to-emerald-900" />
+                <div className="relative flex h-full min-h-[320px] flex-col items-center justify-center gap-4 p-6 text-center text-white sm:min-h-[380px]">
+                  <span className="text-5xl">🌱</span>
+                  <p className="text-lg font-semibold">Sin cosechas publicadas aún</p>
+                  <p className="text-sm text-white/70">Los productores pronto publicarán sus cosechas frescas.</p>
+                </div>
+              </>
+            )}
           </aside>
         </section>
 
@@ -365,61 +432,105 @@ export default function MarketplaceClient({ cosechas, biohuertos }: MarketplaceP
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {cosechasFiltradas.map((product, i) => {
-                const qty = quantities[product.id] ?? 0;
+                const qty = getQty(product.id);
                 const nombrePlanta =
-                  product.cultivo.plantaUsuario.plantaMaestra?.nombreComun ?? product.titulo;
-                const huerto = product.cultivo.parcela.biohuerto.nombreHuerto;
-                const telefono = product.cultivo.parcela.biohuerto.dueno.telefono;
+                  product.cultivo?.plantaUsuario?.plantaMaestra?.nombreComun ?? product.titulo;
+                const huerto = product.cultivo?.parcela?.biohuerto?.nombreHuerto ?? "";
+                const telefono = product.cultivo?.parcela?.biohuerto?.dueno?.telefono ?? null;
                 const tone = TONES[i % TONES.length];
                 const waUrl = telefono
                   ? buildWhatsAppUrl(telefono, `Hola! Quiero comprar "${product.titulo}" de ${huerto}. ¿Está disponible?`)
                   : null;
 
                 return (
-                  <article key={product.id} className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-[0_16px_30px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(15,23,42,0.11)]">
-                    <div className="relative h-36 bg-cover bg-center bg-emerald-50"
-                      style={{ backgroundImage: product.imagenUrl ? `url(${product.imagenUrl})` : undefined }}>
-                      <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${tone}`}>
-                        Fresco
-                      </span>
-                    </div>
-                    <div className="p-4 pb-3">
-                      <h3 className="text-base font-semibold text-slate-950">{nombrePlanta}</h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {huerto} · {product.cantidadDisponible} kg disponibles
-                      </p>
-                      <div className="mt-4 flex items-end justify-between gap-3">
+                  <article key={product.id}
+                    className="overflow-hidden rounded-3xl bg-white shadow-[0_4px_20px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(15,23,42,0.13)]">
+
+                    {/* ── Área de imagen ── */}
+                    <Link href={`/producto/${product.id}`} className="block">
+                      <div
+                        className="relative h-44 overflow-hidden rounded-t-3xl bg-cover bg-center"
+                        style={{
+                          backgroundImage: product.imagenUrl
+                            ? `url(${product.imagenUrl})`
+                            : undefined,
+                          backgroundColor: product.imagenUrl ? undefined : "#d1fae5",
+                        }}
+                      >
+                        {!product.imagenUrl && (
+                          <span className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">🌿</span>
+                        )}
+                        {/* Badge "Fresco" */}
+                        <span className="absolute left-3 top-3 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          Fresco
+                        </span>
+                      </div>
+                    </Link>
+
+                    {/* ── Info ── */}
+                    <div className="px-4 pt-4 pb-4">
+                      <Link href={`/producto/${product.id}`}>
+                        <h3 className="text-base font-bold text-slate-900 leading-snug">
+                          {nombrePlanta}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-400">
+                          {huerto} · {product.cantidadDisponible} kg disponibles
+                        </p>
+                      </Link>
+
+                      <div className="mt-4 flex items-end justify-between gap-2">
                         <div>
-                          <p className="text-xs uppercase tracking-[0.16em] text-slate-400">Precio / kg</p>
-                          <p className="text-lg font-semibold text-emerald-700">
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+                            Precio / kg
+                          </p>
+                          <p className="text-2xl font-bold text-emerald-700 leading-none mt-1">
                             {formatCurrency(product.precioPorKg)}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        {/* Botones */}
+                        <div className="flex items-center gap-2 shrink-0">
                           {qty > 0 ? (
-                            <div className="flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1.5">
-                              <button aria-label={`Quitar ${nombrePlanta}`} onClick={() => decrement(product.id)}
-                                className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm transition hover:bg-emerald-100" type="button">
+                            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-1.5">
+                              <button
+                                aria-label={`Quitar ${nombrePlanta}`}
+                                onClick={() => decrement(product.id)}
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:shadow-sm"
+                                type="button"
+                              >
                                 <MinusIcon />
                               </button>
-                              <span className="min-w-4 text-center text-sm font-semibold text-emerald-700">{qty}</span>
-                              <button aria-label={`Agregar ${nombrePlanta}`} onClick={() => increment(product.id)}
-                                className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm transition hover:bg-emerald-100" type="button">
+                              <span className="min-w-[1.25rem] text-center text-sm font-bold text-slate-800">
+                                {qty}
+                              </span>
+                              <button
+                                aria-label={`Aumentar ${nombrePlanta}`}
+                                onClick={() => increment(product)}
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:shadow-sm"
+                                type="button"
+                              >
                                 <PlusIcon />
                               </button>
                             </div>
                           ) : (
-                            <button aria-label={`Agregar ${nombrePlanta}`} onClick={() => increment(product.id)}
-                              className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white" type="button">
+                            <button
+                              aria-label={`Agregar ${nombrePlanta}`}
+                              onClick={() => increment(product)}
+                              className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                              type="button"
+                            >
                               <PlusIcon />
                             </button>
                           )}
 
                           {waUrl && (
-                            <a href={waUrl} target="_blank" rel="noopener noreferrer"
-                              aria-label={`Contactar productor de ${nombrePlanta} por WhatsApp`}
-                              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow-md shadow-green-400/30 transition hover:bg-[#1ebe5d]">
+                            <a
+                              href={waUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label={`Pedir ${nombrePlanta} por WhatsApp`}
+                              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#25D366] text-white shadow-md shadow-green-400/25 transition hover:bg-[#1ebe5d]"
+                            >
                               <WhatsAppIcon />
                             </a>
                           )}

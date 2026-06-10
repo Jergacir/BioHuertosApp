@@ -61,15 +61,6 @@ function MinusIcon() {
   );
 }
 
-// ─── Tone palette ─────────────────────────────────────────────────────────────
-const TONES = [
-  "bg-emerald-100 text-emerald-700",
-  "bg-rose-100 text-rose-700",
-  "bg-amber-100 text-amber-700",
-  "bg-sky-100 text-sky-700",
-  "bg-violet-100 text-violet-700",
-];
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -262,9 +253,8 @@ export default function BiohuertoPerfilClient({ perfil }: Props) {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {perfil.cosechas.map((cosecha, i) => {
+              {perfil.cosechas.map((cosecha) => {
                 const qty = quantities[cosecha.id] ?? 0;
-                const tone = TONES[i % TONES.length];
                 const waUrl = perfil.dueno.telefono
                   ? buildWhatsAppUrl(
                       perfil.dueno.telefono,
@@ -275,86 +265,70 @@ export default function BiohuertoPerfilClient({ perfil }: Props) {
                 return (
                   <article
                     key={cosecha.id}
-                    className="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-[0_16px_30px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_22px_45px_rgba(15,23,42,0.10)]"
+                    className="overflow-hidden rounded-3xl bg-white shadow-[0_4px_20px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(15,23,42,0.13)]"
                   >
-                    {/* Imagen */}
-                    <div
-                      className="relative h-40 bg-cover bg-center bg-emerald-50"
-                      style={{ backgroundImage: cosecha.imagenUrl ? `url(${cosecha.imagenUrl})` : undefined }}
-                    >
-                      <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${tone}`}>
-                        {cosecha.etapaActual}
-                      </span>
-                      {!cosecha.imagenUrl && (
-                        <span className="absolute inset-0 flex items-center justify-center text-4xl opacity-30">🌿</span>
-                      )}
-                    </div>
+                    {/* ── Área de imagen ── */}
+                    <Link href={`/producto/${cosecha.id}`} className="block">
+                      <div
+                        className="relative h-44 overflow-hidden rounded-t-3xl bg-cover bg-center"
+                        style={{
+                          backgroundImage: cosecha.imagenUrl ? `url(${cosecha.imagenUrl})` : undefined,
+                          backgroundColor: cosecha.imagenUrl ? undefined : "#d1fae5",
+                        }}
+                      >
+                        {!cosecha.imagenUrl && (
+                          <span className="absolute inset-0 flex items-center justify-center text-5xl opacity-20">🌿</span>
+                        )}
+                        <span className="absolute left-3 top-3 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          {cosecha.etapaActual}
+                        </span>
+                      </div>
+                    </Link>
 
-                    {/* Info */}
-                    <div className="p-4">
-                      <p className="text-xs font-medium text-emerald-700">{cosecha.nombrePlanta}</p>
-                      <h3 className="mt-0.5 text-base font-semibold text-slate-950 leading-snug">
-                        {cosecha.titulo}
-                      </h3>
-                      {cosecha.descripcion && (
-                        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
-                          {cosecha.descripcion}
+                    {/* ── Info ── */}
+                    <div className="px-4 pt-4 pb-4">
+                      <Link href={`/producto/${cosecha.id}`}>
+                        <h3 className="text-base font-bold text-slate-900 leading-snug">
+                          {cosecha.titulo}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-400">
+                          {cosecha.nombrePlanta} · {cosecha.cantidadDisponible} kg disponibles
                         </p>
-                      )}
+                      </Link>
 
                       <div className="mt-4 flex items-end justify-between gap-2">
                         <div>
-                          <p className="text-xs uppercase tracking-[0.14em] text-slate-400">Precio / kg</p>
-                          <p className="text-lg font-bold text-emerald-700">
-                            {formatCurrency(cosecha.precioPorKg)}
+                          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+                            Precio / kg
                           </p>
-                          <p className="text-xs text-slate-400">
-                            {cosecha.cantidadDisponible} kg disponibles
+                          <p className="text-2xl font-bold text-emerald-700 leading-none mt-1">
+                            {formatCurrency(cosecha.precioPorKg)}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           {qty > 0 ? (
-                            <div className="flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1.5">
-                              <button
-                                onClick={() => decrement(cosecha.id)}
-                                aria-label="Quitar"
-                                className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm hover:bg-emerald-100"
-                                type="button"
-                              >
+                            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-1.5">
+                              <button onClick={() => decrement(cosecha.id)} aria-label="Quitar"
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:shadow-sm" type="button">
                                 <MinusIcon />
                               </button>
-                              <span className="min-w-[1rem] text-center text-sm font-semibold text-emerald-700">
-                                {qty}
-                              </span>
-                              <button
-                                onClick={() => increment(cosecha.id)}
-                                aria-label="Agregar"
-                                className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-emerald-700 shadow-sm hover:bg-emerald-100"
-                                type="button"
-                              >
+                              <span className="min-w-[1.25rem] text-center text-sm font-bold text-slate-800">{qty}</span>
+                              <button onClick={() => increment(cosecha.id)} aria-label="Aumentar"
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:shadow-sm" type="button">
                                 <PlusIcon />
                               </button>
                             </div>
                           ) : (
-                            <button
-                              onClick={() => increment(cosecha.id)}
-                              aria-label={`Agregar ${cosecha.titulo}`}
-                              className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white"
-                              type="button"
-                            >
+                            <button onClick={() => increment(cosecha.id)} aria-label={`Agregar ${cosecha.titulo}`}
+                              className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700" type="button">
                               <PlusIcon />
                             </button>
                           )}
 
                           {waUrl && (
-                            <a
-                              href={waUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              aria-label="Pedir por WhatsApp"
-                              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white shadow-md shadow-green-400/30 transition hover:bg-[#1ebe5d]"
-                            >
+                            <a href={waUrl} target="_blank" rel="noopener noreferrer" aria-label="Pedir por WhatsApp"
+                              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#25D366] text-white shadow-md shadow-green-400/25 transition hover:bg-[#1ebe5d]">
                               <WhatsAppIcon />
                             </a>
                           )}
