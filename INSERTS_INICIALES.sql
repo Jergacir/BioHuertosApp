@@ -63,21 +63,21 @@ BEGIN
 
     -- 2. POBLAR USUARIOS ADMINS (Jeremy, Rodrigo, Yamir)
     INSERT INTO usuario (id, rol_id, nombre_completo, email, telefono, password_hash, foto_perfil_url) VALUES
-    (id_user_jeremy, id_rol_admin, 'Jeremy Adrián García Ñañez', 'jeremy.garcia@usat.edu.pe', '920111222', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_jeremy.jpg'),
-    (id_user_rodrigo_admin, id_rol_admin, 'Rodrigo Alarcón Mundaca', 'ralarcon@usat.edu.pe', '930222333', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_rodrigo.jpg'),
-    (id_user_yamir, id_rol_admin, 'Yamir Pisfil Flores', 'ypisfil@usat.edu.pe', '940333444', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_yamir.jpg'),
-    (id_user_karla, id_rol_admin, 'Ing. Karla Reyes Burgos', 'kreyes@usat.edu.pe', '974852163', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_karla.jpg');
+    (id_user_jeremy, id_rol_admin, 'Jeremy Adrián García Ñañez', 'jeremy.garcia@usat.edu.pe', '920111222', 'Admin123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_jeremy.jpg'),
+    (id_user_rodrigo_admin, id_rol_admin, 'Rodrigo Alarcón Mundaca', 'ralarcon@usat.edu.pe', '930222333', 'Admin123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_rodrigo.jpg'),
+    (id_user_yamir, id_rol_admin, 'Yamir Pisfil Flores', 'ypisfil@usat.edu.pe', '940333444', 'Admin123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_yamir.jpg'),
+    (id_user_karla, id_rol_admin, 'Ing. Karla Reyes Burgos', 'kreyes@usat.edu.pe', '974852163', 'Admin123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/admin_karla.jpg');
 
     -- POBLAR 3 PRODUCTORES DISTINTOS
     INSERT INTO usuario (id, rol_id, nombre_completo, email, telefono, password_hash, foto_perfil_url) VALUES
-    (id_user_prod_rodrigo, id_rol_productor, 'Rodrigo Agroecológico Chiclayo', 'rodrigo.sistemas@gmail.com', '987654321', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/productor_rodrigo.jpg'),
-    (id_user_prod_juan, id_rol_productor, 'Juan Pérez Altamirano', 'juan.perez@outlook.com', '963258741', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/productor_juan.jpg'),
-    (id_user_prod_elena, id_rol_productor, 'Elena Sullón Ramos', 'elena.sullon@gmail.com', '912345678', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/productor_elena.jpg');
+    (id_user_prod_rodrigo, id_rol_productor, 'Rodrigo Agroecológico Chiclayo', 'rodrigo.sistemas@gmail.com', '987654321', 'Productor123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/productor_rodrigo.jpg'),
+    (id_user_prod_juan, id_rol_productor, 'Juan Pérez Altamirano', 'juan.perez@outlook.com', '963258741', 'Productor123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/productor_juan.jpg'),
+    (id_user_prod_elena, id_rol_productor, 'Elena Sullón Ramos', 'elena.sullon@gmail.com', '912345678', 'Productor123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/productor_elena.jpg');
 
     -- POBLAR COMPRADORES
     INSERT INTO usuario (id, rol_id, nombre_completo, email, telefono, password_hash, foto_perfil_url) VALUES
-    (id_user_comp_maria, id_rol_comprador, 'María Elena Delgado', 'maria.elena@outlook.com', '951753468', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/comprador_maria.jpg'),
-    (id_user_comp_carlos, id_rol_comprador, 'Carlos Mendoza Ruiz', 'carlos.mendoza@gmail.com', '942751836', '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36wA5M99H.aW9GZ7W.k2e.i', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/comprador_carlos.jpg');
+    (id_user_comp_maria, id_rol_comprador, 'María Elena Delgado', 'maria.elena@outlook.com', '951753468', 'Comprador123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/comprador_maria.jpg'),
+    (id_user_comp_carlos, id_rol_comprador, 'Carlos Mendoza Ruiz', 'carlos.mendoza@gmail.com', '942751836', 'Comprador123', 'https://res.cloudinary.com/bioned-usat/image/upload/v1/profiles/comprador_carlos.jpg');
 
     -- 3. POBLAR 3 BIOHUERTOS (Corregido para el estándar CamelCase de Prisma)
     INSERT INTO biohuerto (id, dueno_id, nombre_huerto, descripcion, direccion_texto, "ubicacionGeo", area_metros_cuadrados, foto_portada_url) VALUES

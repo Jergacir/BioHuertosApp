@@ -43,6 +43,7 @@ CREATE TABLE biohuerto (
     descripcion TEXT,
     direccion_texto TEXT NOT NULL, -- Ej: 'Av. Pimentel 123, Chiclayo'
     ubicacion_geo GEOMETRY(Point, 4326) NOT NULL, -- Coordenadas GPS (Lat, Long) para PostGIS
+    area_geografica GEOMETRY(Polygon, 4326),
     area_metros_cuadrados NUMERIC(8,2) DEFAULT 0.00 NOT NULL, -- Área total de la propiedad
     foto_portada_url TEXT, -- URL segura de Cloudinary para las tarjetas estilo Gromuse
     fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -59,6 +60,8 @@ CREATE TABLE parcela (
     nombre_identificador VARCHAR(100) NOT NULL, -- Ej: 'Invernadero 1', 'Patio Trasero'
     area_metros_cuadrados NUMERIC(8,2) NOT NULL, -- Cuánto mide este sector específico
     tipo_suelo VARCHAR(50), -- Ej: 'Tierra directa', 'Maceta', 'Hidroponía'
+    ubicacion_geo GEOMETRY(Point, 4326),           -- Punto central de la parcela (opcional pero útil)
+    area_geografica GEOMETRY(Polygon, 4326),
     fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     
     CONSTRAINT fk_parcela_biohuerto FOREIGN KEY (biohuerto_id) REFERENCES biohuerto(id) ON DELETE CASCADE

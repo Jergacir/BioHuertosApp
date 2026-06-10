@@ -36,17 +36,20 @@ model Usuario {
 }
 
 model Biohuerto {
-  id                  String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  duenoId             String                  @map("dueno_id") @db.Uuid
-  nombreHuerto        String                  @map("nombre_huerto") @db.VarChar(100)
+  id                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  duenoId             String                   @map("dueno_id") @db.Uuid
+  nombreHuerto        String                   @map("nombre_huerto") @db.VarChar(100)
   descripcion         String?
-  direccionTexto      String                  @map("direccion_texto")
+  direccionTexto      String                   @map("direccion_texto")
   ubicacionGeo        Unsupported("geometry")
-  areaMetrosCuadrados Decimal                 @map("area_metros_cuadrados") @db.Decimal(8, 2)
-  fotoPortadaUrl      String?                 @map("foto_portada_url")
-  fechaCreacion       DateTime                @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
+  areaGeografica      Unsupported("geometry")?  @map("area_geografica")
+  areaMetrosCuadrados Decimal                  @map("area_metros_cuadrados") @db.Decimal(8, 2)
+  fotoPortadaUrl      String?                  @map("foto_portada_url")
+  activo              Boolean                  @default(true)
+  fechaEliminacion    DateTime?                @map("fecha_eliminacion") @db.Timestamptz(6)
+  fechaCreacion       DateTime                 @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
   alertas             AlertaRecordatorio[]
-  dueno               Usuario                 @relation(fields: [duenoId], references: [id], onDelete: Cascade)
+  dueno               Usuario                  @relation(fields: [duenoId], references: [id], onDelete: Cascade)
   parcelas            Parcela[]
   finanzas            RegistroFinanciero[]
 
@@ -54,14 +57,18 @@ model Biohuerto {
 }
 
 model Parcela {
-  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  biohuertoId         String    @map("biohuerto_id") @db.Uuid
-  nombreIdentificador String    @map("nombre_identificador") @db.VarChar(100)
-  areaMetrosCuadrados Decimal   @map("area_metros_cuadrados") @db.Decimal(8, 2)
-  tipoSuelo           String?   @map("tipo_suelo") @db.VarChar(50)
-  fechaCreacion       DateTime  @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
+  id                  String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  biohuertoId         String                   @map("biohuerto_id") @db.Uuid
+  nombreIdentificador String                   @map("nombre_identificador") @db.VarChar(100)
+  areaMetrosCuadrados Decimal                  @map("area_metros_cuadrados") @db.Decimal(8, 2)
+  tipoSuelo           String?                  @map("tipo_suelo") @db.VarChar(50)
+  ubicacionGeo        Unsupported("geometry")?
+  areaGeografica      Unsupported("geometry")?  @map("area_geografica")
+  activo              Boolean                  @default(true)
+  fechaEliminacion    DateTime?                @map("fecha_eliminacion") @db.Timestamptz(6)
+  fechaCreacion       DateTime                 @default(now()) @map("fecha_creacion") @db.Timestamptz(6)
   cultivos            Cultivo[]
-  biohuerto           Biohuerto @relation(fields: [biohuertoId], references: [id], onDelete: Cascade)
+  biohuerto           Biohuerto                @relation(fields: [biohuertoId], references: [id], onDelete: Cascade)
 
   @@map("parcela")
 }
