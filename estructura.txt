@@ -4,6 +4,15 @@ bio-huertos-app/
 │   ├── schema.prisma        # Tu esquema definitivo sincronizado con Neon
 ├── src/
 │   ├── app/                 # FRONTEND & API ROUTING (App Router)
+│   │   ├── api/                        # <--- ¡AQUÍ VA TODO LO COMPARTIDO!
+│   │   │    ├── biohuertos/
+│   │   │    │   └── cercanos/
+│   │   │    │       └── route.ts        # GET /api/biohuertos/cercanos?lat=-6.7&lng=-79.8 (Usa PostGIS)
+│   │   │    ├── cultivos/
+│   │   │    │   └── route.ts            # GET /api/cultivos (Para listar cultivos en la App Móvil)
+│   │   │    └── auth/
+│   │   │        └── login/
+│   │   │            └── route.ts        # POST /api/auth/login (Para iniciar sesión desde el celular)                 
 │   │   ├── (auth)/          # Grupo de rutas para Autenticación (Login / Registro)
 │   │   │   ├── login/page.tsx
 │   │   │   └── register/page.tsx
